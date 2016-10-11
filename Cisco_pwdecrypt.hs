@@ -22,7 +22,7 @@ takeRightkey :: Show a => Either a b -> b
 takeRightkey (Left y) = error $ show y
 takeRightkey (Right x) = x
 
-decryptCiscoGroupPassword :: String -> C8.ByteString
+decryptCiscoGroupPassword :: String -> String
 decryptCiscoGroupPassword encrypttext = let bin_str = C8.group.fst.decode.C8.pack $ encrypttext 
                                             ht = Prelude.take 20 bin_str
                                             enc = Prelude.drop 40 bin_str
@@ -41,7 +41,7 @@ decryptCiscoGroupPassword encrypttext = let bin_str = C8.group.fst.decode.C8.pac
                                             ivv = maybe (error "invalid IV") id $ makeIV $ C8.concat.Prelude.take 8 $ iv
                                             desede3 = cipherInit key :: DES_EDE3
                                             ctext = cbcDecrypt desede3 ivv (C8.concat enc)
-                                        in C8.takeWhile (\x-> isAlphaNum x || isPunctuation x) ctext                                        
+                                        in C8.unpack $ C8.takeWhile (\x-> isAlphaNum x || isPunctuation x) ctext
                                         where shadigest = C8.group.toStrict.bytestringDigest.sha1.fromStrict.C8.concat
 
 -- Testing crypted string with pure key reveal for Type 7
@@ -72,6 +72,6 @@ decryptCiscoType7Password x = let   index = read(take 2 x)::Int
 
 main = do
         print "enc_GroupPwd"
-        mapM_ (putStrLn.C8.unpack.decryptCiscoGroupPassword) enclist
+        mapM_ (putStrLn.decryptCiscoGroupPassword) enclist
         print "Type 7"
         mapM_ (putStrLn.decryptCiscoType7Password) type7list
