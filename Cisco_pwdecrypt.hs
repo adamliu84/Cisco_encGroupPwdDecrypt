@@ -10,9 +10,10 @@ import Data.Char as C (isAlphaNum, isPunctuation)
 import Crypto.Cipher (makeKey, makeIV, cipherInit, DES_EDE3, cbcDecrypt)
 
 -- Testing crypted string with pure key reveal
-sample1 = "9196FE0075E359E6A2486905A1EFAE9A11D652B2C588EF3FBA15574237302B74C194EC7D0DD16645CB534D94CE85FEC4" --letmein
-sample2 = "A39CADD77ED72A9C75467D0F5A5C88BFCD75370DD63E3388D3F402AF50C4E5029071B0965C343B99B6D6636A8698562DDB2EE51020D87EA3" --HelloWorld
-sample3 = "886E2FC74BFCD8B6FAF47784C386A50D0C1A5D0528D1E682B7EBAB6B2E91E792E389914767193F9114FA26C1E192034754F85FC97ED36509" --Th!sIsMyK3y#
+encsample1 = "9196FE0075E359E6A2486905A1EFAE9A11D652B2C588EF3FBA15574237302B74C194EC7D0DD16645CB534D94CE85FEC4" --letmein
+encsample2 = "A39CADD77ED72A9C75467D0F5A5C88BFCD75370DD63E3388D3F402AF50C4E5029071B0965C343B99B6D6636A8698562DDB2EE51020D87EA3" --HelloWorld
+encsample3 = "886E2FC74BFCD8B6FAF47784C386A50D0C1A5D0528D1E682B7EBAB6B2E91E792E389914767193F9114FA26C1E192034754F85FC97ED36509" --Th!sIsMyK3y#
+enclist = [encsample1, encsample2, encsample3]
 
 takeRightkey :: Show a => Either a b -> b
 takeRightkey (Left y) = error $ show y
@@ -39,7 +40,6 @@ decryptCiscoGroupPassword encrypttext = let bin_str = C8.group.fst.decode.C8.pac
                                             ctext = cbcDecrypt desede3 ivv (C8.concat enc)
                                         in C8.takeWhile (\x-> isAlphaNum x || isPunctuation x) ctext                                        
                                         where shadigest = C8.group.toStrict.bytestringDigest.sha1.fromStrict.C8.concat
-main = do        
-    print $ decryptCiscoGroupPassword sample1
-    print $ decryptCiscoGroupPassword sample2        
-    print $ decryptCiscoGroupPassword sample3    
+main = do
+        print "enc_GroupPwd"
+        mapM_ (putStrLn.C8.unpack.decryptCiscoGroupPassword) enclist
