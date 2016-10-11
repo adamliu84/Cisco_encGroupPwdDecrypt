@@ -59,7 +59,7 @@ getxlat x y z = let a = xlat !! (x + y)
                 in char
                                         
 pairBy2 :: String -> [String]
-pairBy2 (x:y:zz) = [x:[y]] ++ pairBy2 zz
+pairBy2 (x:y:zz) = (x:[y]) : pairBy2 zz
 pairBy2 [] = []
                          
 decryptCiscoType7Password :: String -> String                         
