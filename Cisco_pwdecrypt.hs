@@ -19,25 +19,25 @@ takeRightkey (Left y) = error $ show y
 takeRightkey (Right x) = x
 
 decryptCiscoGroupPassword :: String -> C8.ByteString
-decryptCiscoGroupPassword encrypttext = let bin_str = C8.group $ fst $ decode.C8.pack $ encrypttext 
+decryptCiscoGroupPassword encrypttext = let bin_str = C8.group.fst.decode.C8.pack $ encrypttext 
                                             ht = Prelude.take 20 bin_str
                                             enc = Prelude.drop 40 bin_str
                                             iv = bin_str
                                             
-                                            ht1 = (Prelude.take 19 ht) ++ [(C8.singleton.succ.C8.maximum $ (ht !! 19))] ++ (Prelude.drop 20 ht)                                                    
+                                            ht1 = (Prelude.take 19 ht) ++ [C8.singleton.succ.C8.maximum $ ht !! 19] ++ (Prelude.drop 20 ht)                                                    
                                             h2  = shadigest ht1
                                             
-                                            ht2 = (Prelude.take 19 ht1) ++ [(C8.singleton.succ.succ.C8.maximum $ (ht1 !! 19))] ++ (Prelude.drop 20 ht1)                                            
+                                            ht2 = (Prelude.take 19 ht1) ++ [C8.singleton.succ.succ.C8.maximum $ ht1 !! 19] ++ (Prelude.drop 20 ht1)                                            
                                             h3  = shadigest ht2
                                             
                                             keyString = h2 ++ (Prelude.take 4 h3)
                                             
                                             -- http://stackoverflow.com/questions/19509175/how-to-aes-ecb-mode-encrypt-using-cryptocipher  
                                             key = takeRightkey $ makeKey.C8.concat $ keyString
-                                            ivv = maybe (error "invalid IV") id $ (makeIV (C8.concat (Prelude.take 8 iv)))        
+                                            ivv = maybe (error "invalid IV") id $ makeIV $ C8.concat.Prelude.take 8 $ iv
                                             desede3 = cipherInit key :: DES_EDE3
-                                            ctext = cbcDecrypt desede3 ivv (C8.concat enc)                                              
-                                        in C8.takeWhile (\x-> isAlphaNum(x) || isPunctuation(x)) ctext                                        
+                                            ctext = cbcDecrypt desede3 ivv (C8.concat enc)
+                                        in C8.takeWhile (\x-> isAlphaNum x || isPunctuation x) ctext                                        
                                         where shadigest = C8.group.toStrict.bytestringDigest.sha1.fromStrict.C8.concat
 main = do        
     print $ decryptCiscoGroupPassword sample1
